@@ -1,0 +1,17 @@
+# https://cloud.google.com/appengine/docs/standard/go/reference/dispatch-yaml
+dispatch:
+  # Default service serves the typical web resources and all static resources.
+  - url: "*/favicon.ico"
+    service: default
+
+  # Default service serves simple hostname request.
+  - url: "simple-sample.appspot.com/"
+    service: default
+
+  # Send all mobile traffic to the mobile frontend.
+  - url: "*/mobile/*"
+    service: mobile-frontend
+
+  # Send all work to the one static backend.
+  - url: "*/work/*"
+    service: static-backend
