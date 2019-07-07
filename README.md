@@ -23,7 +23,7 @@ I suggest to use it with [foreman](http://ddollar.github.io/foreman/) to launch/
 ## Installation
 
 ```bash
-go get github.com/karupanerura/gae-dispatcher-emulator/...
+go get -u github.com/karupanerura/gae-dispatcher-emulator/...
 ```
 
 ## Usage
