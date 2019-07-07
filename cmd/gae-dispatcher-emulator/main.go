@@ -25,14 +25,21 @@ import (
 )
 
 type options struct {
-	ConfigFile string   `short:"c" long:"config" description:"dispatch.xml or dispatch.yaml" required:"true"`
-	Services   []string `short:"s" long:"service" description:"service map (e.g. --service default:localhost:8081 --service admin:localhost:8082)" required:"true"`
-	ListenAddr string   `short:"l" long:"listen" description:"listening host:port (localhost:3000 is default)" default:"localhost:3000"`
-	Verbose    bool     `short:"v" long:"verbose" description:"verbose output for proxy request"`
+	ConfigFile  string   `short:"c" long:"config" description:"dispatch.xml or dispatch.yaml" required:"true"`
+	Services    []string `short:"s" long:"service" description:"service map (e.g. --service default:localhost:8081 --service admin:localhost:8082)" required:"true"`
+	ListenAddr  string   `short:"l" long:"listen" description:"listening host:port (localhost:3000 is default)" default:"localhost:3000"`
+	Verbose     bool     `short:"v" long:"verbose" description:"verbose output for proxy request"`
+	ShowVersion func()   `long:"version" description:"show version"`
 }
 
 func main() {
-	var opts options
+	opts := options{
+		ShowVersion: func() {
+			log.Printf("gae-dispatcher-emulator %s", gaedispemu.Version)
+			os.Exit(0)
+		},
+	}
+
 	_, err := flags.ParseArgs(&opts, os.Args)
 	if ferr, ok := err.(*flags.Error); ok && ferr.Type == flags.ErrHelp {
 		return
