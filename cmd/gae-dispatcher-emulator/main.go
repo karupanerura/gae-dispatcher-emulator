@@ -91,7 +91,7 @@ func (o options) getConfigLoader() gaedispemu.ConfigLoader {
 	if strings.HasSuffix(o.ConfigFile, ".xml") {
 		return gaedispemu.NewXMLConfigLoader(o.ConfigFile)
 	} else if strings.HasSuffix(o.ConfigFile, ".yaml") {
-		return gaedispemu.NewXMLConfigLoader(o.ConfigFile)
+		return gaedispemu.NewYAMLConfigLoader(o.ConfigFile)
 	}
 
 	return nil
