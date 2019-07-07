@@ -34,7 +34,9 @@ type options struct {
 func main() {
 	var opts options
 	_, err := flags.ParseArgs(&opts, os.Args)
-	if err != nil {
+	if ferr, ok := err.(*flags.Error); ok && ferr.Type == flags.ErrHelp {
+		return
+	} else if err != nil {
 		log.Printf("Failed to parse args: %v", err)
 		os.Exit(1)
 	}
