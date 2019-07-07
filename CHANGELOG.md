@@ -1,3 +1,7 @@
+## 0.2.0 (2019/07/08)
+
+* Fix backend request's Content-Length
+
 ## 0.2.0 (2019/07/07)
 
 * Add ErrorReporterFunc type (library interface)
