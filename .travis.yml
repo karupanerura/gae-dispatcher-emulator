@@ -1,0 +1,8 @@
+language: go
+
+install:
+ - go get -u github.com/golang/lint/golint
+
+script:
+ - go test
+ - diff <(golint -set_exit_status ./...) <(printf "")
