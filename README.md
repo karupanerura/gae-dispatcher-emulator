@@ -34,6 +34,7 @@ Example:
 
 ```bash
 curl -sfL -o ~/bin/gae-dispatcher-emulator https://github.com/karupanerura/gae-dispatcher-emulator/releases/download/v0.3.0/gae-dispatcher-emulator_darwin_amd64
+chmod +x ~/bin/gae-dispatcher-emulator
 ```
 
 ## Usage
