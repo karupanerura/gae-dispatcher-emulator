@@ -144,6 +144,48 @@ func TestProxyHandler(t *testing.T) {
 		})
 	}
 
+	t.Run("X-Forwarded-For", func(t *testing.T) {
+		u := fmt.Sprintf("%s%s", proxy.URL, "/default/bar")
+		req, err := http.NewRequest(http.MethodGet, u, nil)
+		if err != nil {
+			t.Error(err)
+		}
+
+		req.Header.Set("User-Agent", "testing")
+		req.Header.Set("Status", "200")
+		req.Header.Set("X-Forwarded-For", "203.0.113.1")
+
+		res, err := http.DefaultClient.Do(req)
+		if err != nil {
+			t.Error(err)
+		}
+		defer res.Body.Close()
+
+		if res.StatusCode != 200 {
+			t.Errorf("proxy status code should be 200 but got %d", res.StatusCode)
+		}
+		if s := res.Header.Get("Service"); s != "default" {
+			t.Errorf("should proxy to default, but got %s", s)
+		}
+
+		body, err := ioutil.ReadAll(res.Body)
+		if err != nil {
+			t.Error(err)
+		}
+
+		got := string(body)
+		expected := heredoc.Doc(`
+			GET /default/bar
+			Accept-Encoding: gzip
+			Status: 200
+			User-Agent: testing
+			X-Forwarded-For: 127.0.0.1, 203.0.113.1
+		`)
+		if got != expected {
+			t.Errorf("Unexpected response body: %s", got)
+		}
+	})
+
 	t.Run("NoBackend", func(t *testing.T) {
 		res, err := http.Get(proxy.URL)
 		if err != nil {
