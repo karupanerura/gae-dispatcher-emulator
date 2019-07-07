@@ -1,5 +1,9 @@
 # gae-dispatcher-emulator
 
+[![Build Status](https://travis-ci.org/karupanerura/gae-dispatcher-emulator.svg?branch=master)](https://travis-ci.org/karupanerura/gae-dispatcher-emulator)
+[![codecov](https://codecov.io/gh/karupanerura/gae-dispatcher-emulator/branch/master/graph/badge.svg)](https://codecov.io/gh/karupanerura/gae-dispatcher-emulator)
+[![GoDoc](https://godoc.org/github.com/karupanerura/gae-dispatcher-emulator?status.svg)](http://godoc.org/github.com/karupanerura/gae-dispatcher-emulator)
+
 Unofficial Google App Engine Dispatcher Emulator
 
 ## INSTALL
