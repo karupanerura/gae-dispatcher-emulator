@@ -23,7 +23,7 @@ func TestYAMLConfigLoaderError(t *testing.T) {
 		t.Error("should be error")
 	}
 
-	_, err = NewYAMLConfigLoader("./test/invalid-dispatch.xml").LoadConfig()
+	_, err = NewYAMLConfigLoader("./test/invalid-dispatch.yaml").LoadConfig()
 	if err == nil {
 		t.Error("should be error")
 	}
