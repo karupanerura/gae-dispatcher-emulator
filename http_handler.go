@@ -82,7 +82,7 @@ func (h *serviceProxyHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) 
 
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
-		http.Error(w, "Failed to request for backend", http.StatusInternalServerError)
+		http.Error(w, "Failed to request for backend", http.StatusBadGateway)
 		h.errorReporter.ReportError(err)
 		return
 	}
