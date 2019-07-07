@@ -149,9 +149,9 @@ func getNewForwardedIPs(r *http.Request) string {
 func getRemoteIP(r *http.Request) string {
 	// remove port
 	index := strings.Index(r.RemoteAddr, ":")
-	if index != -1 {
-		return r.RemoteAddr[:index]
+	if index == -1 {
+		return r.RemoteAddr
 	}
 
-	return r.RemoteAddr
+	return r.RemoteAddr[:index]
 }

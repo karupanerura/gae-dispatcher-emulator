@@ -1,7 +1,6 @@
 package gaedispemu
 
 import (
-	"net/url"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
@@ -99,13 +98,4 @@ func TestDispatcher(t *testing.T) {
 			t.Errorf("`%s%s` is failed: diff=%s", c.Host, c.Path, diff)
 		}
 	}
-}
-
-func mustParseURL(s string) *url.URL {
-	u, err := url.Parse(s)
-	if err != nil {
-		panic(err)
-	}
-
-	return u
 }
