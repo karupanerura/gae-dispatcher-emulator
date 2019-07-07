@@ -10,9 +10,11 @@ go:
 
 before_install:
   - go get -d -v -t ./...
+  - go get golang.org/x/lint/golint
 
 script:
   - go test -race -coverprofile=coverage.out -covermode=atomic
+  - golint -set_exit_status ./...
 
 after_success:
   - bash <(curl -s https://codecov.io/bash)
