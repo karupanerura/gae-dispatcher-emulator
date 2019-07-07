@@ -2,17 +2,28 @@ package gaedispemu
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
+	"reflect"
 	"strconv"
 	"strings"
 	"testing"
 
 	"github.com/MakeNowJust/heredoc"
+	"github.com/google/go-cmp/cmp"
 )
+
+func TestProxyHandlerWithReporter(t *testing.T) {
+	reporter := ErrorReporterFunc(func(err error) {})
+	handler := NewProxyHandlerWithReporter(nil, reporter).(*proxyHandler)
+	if reflect.ValueOf(handler.errorReporter).Pointer() != reflect.ValueOf(reporter).Pointer() {
+		t.Errorf("should set expected reporter")
+	}
+}
 
 func TestProxyHandler(t *testing.T) {
 	defaultBackend := httptest.NewServer(getBackendHandler("default"))
@@ -222,4 +233,144 @@ func getBackendHandler(service string) http.Handler {
 		io.WriteString(w, headers)
 		io.Copy(w, r.Body)
 	})
+}
+
+type brokenResponseWriter struct{}
+
+func (b brokenResponseWriter) Header() http.Header {
+	return http.Header{}
+}
+
+func (b brokenResponseWriter) WriteHeader(status int) {
+}
+
+func (b brokenResponseWriter) Write([]byte) (int, error) {
+	return 0, errors.New("broken")
+}
+
+func TestServiceProxyHandler(t *testing.T) {
+	t.Run("FailedToCreateRequest", func(t *testing.T) {
+		var reported []error
+		reporter := ErrorReporterFunc(func(err error) {
+			reported = append(reported, err)
+		})
+
+		handler := &serviceProxyHandler{service: &Service{Name: "default", Origin: mustParseURL("http://203.0.113.1")}, errorReporter: reporter}
+		recorder := httptest.NewRecorder()
+		handler.ServeHTTP(recorder, &http.Request{
+			Method: " INVALID ",
+			URL:    mustParseURL("/"),
+		})
+
+		if len(reported) != 1 {
+			t.Errorf("Unexpected reported errors: %v", reported)
+		}
+
+		result := recorder.Result()
+		if result.StatusCode != http.StatusBadRequest {
+			t.Errorf("Unexpected response status: %d", result.StatusCode)
+		}
+	})
+
+	t.Run("FailedToRequestForBackend", func(t *testing.T) {
+		var reported []error
+		reporter := ErrorReporterFunc(func(err error) {
+			reported = append(reported, err)
+		})
+
+		handler := &serviceProxyHandler{service: &Service{Name: "default", Origin: mustParseURL("http://203.0.113.1:99999")}, errorReporter: reporter}
+		recorder := httptest.NewRecorder()
+		handler.ServeHTTP(recorder, &http.Request{
+			Method: "GET",
+			URL:    mustParseURL("/"),
+		})
+
+		if len(reported) != 1 {
+			t.Errorf("Unexpected reported errors: %v", reported)
+		}
+
+		result := recorder.Result()
+		if result.StatusCode != http.StatusBadGateway {
+			t.Errorf("Unexpected response status: %d", result.StatusCode)
+		}
+	})
+
+	t.Run("FailedToWriteResponse", func(t *testing.T) {
+		defaultBackend := httptest.NewServer(getBackendHandler("default"))
+		defer defaultBackend.Close()
+
+		var reported []error
+		reporter := ErrorReporterFunc(func(err error) {
+			reported = append(reported, err)
+		})
+
+		handler := &serviceProxyHandler{service: &Service{Name: "default", Origin: mustParseURL(defaultBackend.URL)}, errorReporter: reporter}
+		handler.ServeHTTP(brokenResponseWriter{}, &http.Request{
+			Method: "GET",
+			URL:    mustParseURL("/"),
+		})
+
+		if len(reported) != 1 {
+			t.Errorf("Unexpected reported errors: %v", reported)
+		} else if reported[0].Error() != "broken" {
+			t.Errorf("Unexpected reported errors: %v", reported)
+		}
+	})
+}
+
+func TestErrorReporter(t *testing.T) {
+	t.Run("Nop", func(t *testing.T) {
+		nopErrorReporter.ReportError(errors.New("foo"))
+	})
+}
+
+func TestCreateProxyRequest(t *testing.T) {
+	t.Run("Invalid", func(t *testing.T) {
+		handler := &serviceProxyHandler{service: &Service{Name: "default", Origin: mustParseURL("http://localhost:8080")}}
+		_, err := handler.createProxyRequest(&http.Request{
+			Method: " INVALID ",
+			URL:    mustParseURL("http://localhost:8080/"),
+		})
+		if err == nil {
+			t.Errorf("should be error")
+		}
+	})
+}
+
+func TestFilterHeaders(t *testing.T) {
+	t.Run("Keep", func(t *testing.T) {
+		h := http.Header{}
+		h.Set("Server", "foo")
+		filterHeaders(h)
+
+		expected := http.Header{}
+		expected.Set("Server", "foo")
+		if diff := cmp.Diff(expected, h); diff != "" {
+			t.Errorf("should not be filterd any fields but got %s", diff)
+		}
+	})
+
+	t.Run("Connection", func(t *testing.T) {
+		h := http.Header{}
+		h.Set("Server", "foo")
+		h.Set("Connection", "Keep-Alive")
+		h.Set("Keep-Alive", "timeout=5, max=1000")
+		filterHeaders(h)
+
+		expected := http.Header{}
+		expected.Set("Server", "foo")
+		if diff := cmp.Diff(expected, h); diff != "" {
+			t.Errorf("should be filterd some fields but got %s", diff)
+		}
+	})
+}
+
+func TestGetRemoteIP(t *testing.T) {
+	if ip := getRemoteIP(&http.Request{RemoteAddr: "203.0.113.1"}); ip != "203.0.113.1" {
+		t.Errorf("should be 203.0.113.1 but got %s", ip)
+	}
+
+	if ip := getRemoteIP(&http.Request{RemoteAddr: "203.0.113.1:12345"}); ip != "203.0.113.1" {
+		t.Errorf("should be 203.0.113.1 but got %s", ip)
+	}
 }
