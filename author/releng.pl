@@ -78,5 +78,6 @@ while (1) {
 system 'git', 'add', qw/VERSION version_gen.go CHANGELOG.md/;
 system 'git', 'commit', '-m', "release $version";
 system 'git', 'tag', "v$version";
+system 'git', 'push';
 system 'git', 'push', '--tags';
 system 'ghr', "v$version", './build';
