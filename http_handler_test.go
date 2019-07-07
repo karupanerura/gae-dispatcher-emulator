@@ -115,8 +115,9 @@ func TestProxyHandler(t *testing.T) {
 					User-Agent: testing
 					X-Forwarded-For: 127.0.0.1
 				`), service)
-				if got != expected {
+				if diff := cmp.Diff(expected, got); diff != "" {
 					t.Errorf("Unexpected response body: %s", got)
+					t.Log(diff)
 				}
 			})
 
@@ -143,13 +144,15 @@ func TestProxyHandler(t *testing.T) {
 				expected := fmt.Sprintf(heredoc.Doc(`
 					POST /%s/
 					Accept-Encoding: gzip
+					Content-Length: 15
 					Status: 201
 					User-Agent: testing
 					X-Forwarded-For: 127.0.0.1
 					this is a body
 				`), service)
-				if got != expected {
+				if diff := cmp.Diff(expected, got); diff != "" {
 					t.Errorf("Unexpected response body: %s", got)
+					t.Log(diff)
 				}
 			})
 		})
