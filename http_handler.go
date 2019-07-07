@@ -6,25 +6,42 @@ import (
 	"strings"
 )
 
+// ErrorReporter is error reporter interface for proxy handler
+type ErrorReporter interface {
+	ReportError(error)
+}
+
+type nopErrorReporterType struct{}
+
+var nopErrorReporter = nopErrorReporterType{}
+
+func (r nopErrorReporterType) ReportError(e error) {}
+
 // NewProxyHandler creates a new proxy handler
 func NewProxyHandler(dispatcher Dispatcher) http.Handler {
-	return &dispatcherHandler{dispatcher: dispatcher}
+	return &proxyHandler{dispatcher: dispatcher, errorReporter: nopErrorReporter}
 }
 
-type dispatcherHandler struct {
-	dispatcher Dispatcher
+// NewProxyHandlerWithReporter creates a new proxy handler with error reporter
+func NewProxyHandlerWithReporter(dispatcher Dispatcher, errorReporter ErrorReporter) http.Handler {
+	return &proxyHandler{dispatcher: dispatcher, errorReporter: errorReporter}
 }
 
-var _ http.Handler = (*dispatcherHandler)(nil)
+type proxyHandler struct {
+	dispatcher    Dispatcher
+	errorReporter ErrorReporter
+}
 
-func (h *dispatcherHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+var _ http.Handler = (*proxyHandler)(nil)
+
+func (h *proxyHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	service := h.dispatcher.Dispatch(r.URL.Host, r.URL.Path)
 	if service == nil {
 		http.Error(w, "No such backend for the URL: "+r.URL.Path, http.StatusNotFound)
 		return
 	}
 
-	next := &serviceProxyHandler{service: service}
+	next := &serviceProxyHandler{service: service, errorReporter: h.errorReporter}
 	next.ServeHTTP(w, r)
 }
 
@@ -41,7 +58,8 @@ var nopHeadersByHop = []string{
 }
 
 type serviceProxyHandler struct {
-	service *Service
+	service       *Service
+	errorReporter ErrorReporter
 }
 
 var _ http.Handler = (*serviceProxyHandler)(nil)
@@ -50,16 +68,21 @@ func (h *serviceProxyHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) 
 	req, err := h.createProxyRequest(r)
 	if err != nil {
 		http.Error(w, "Failed to create proxy request", http.StatusBadRequest)
+		h.errorReporter.ReportError(err)
 		return
 	}
 
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
-		http.Error(w, "Failed to request for proxy", http.StatusInternalServerError)
+		http.Error(w, "Failed to request for backend", http.StatusInternalServerError)
+		h.errorReporter.ReportError(err)
 		return
 	}
 
-	h.proxyResponse(w, res)
+	err = h.proxyResponse(w, res)
+	if err != nil {
+		h.errorReporter.ReportError(err)
+	}
 }
 
 func (h *serviceProxyHandler) createProxyRequest(src *http.Request) (*http.Request, error) {
@@ -77,7 +100,7 @@ func (h *serviceProxyHandler) createProxyRequest(src *http.Request) (*http.Reque
 	return dst, nil
 }
 
-func (h *serviceProxyHandler) proxyResponse(w http.ResponseWriter, res *http.Response) {
+func (h *serviceProxyHandler) proxyResponse(w http.ResponseWriter, res *http.Response) error {
 	defer res.Body.Close()
 
 	// proxy headers
@@ -87,9 +110,7 @@ func (h *serviceProxyHandler) proxyResponse(w http.ResponseWriter, res *http.Res
 
 	// proxy body
 	_, err := io.Copy(w, res.Body)
-	if err != nil {
-		// TODO
-	}
+	return err
 }
 
 func filterHeaders(h http.Header) {
@@ -126,13 +147,11 @@ func getNewForwardedIPs(r *http.Request) string {
 }
 
 func getRemoteIP(r *http.Request) string {
-	addr := r.RemoteAddr
-
 	// remove port
-	index := strings.Index(addr, ":")
+	index := strings.Index(r.RemoteAddr, ":")
 	if index != -1 {
-		addr = r.RemoteAddr[:index]
+		return r.RemoteAddr[:index]
 	}
 
-	return addr
+	return r.RemoteAddr
 }

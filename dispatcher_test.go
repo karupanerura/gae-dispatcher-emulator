@@ -7,6 +7,30 @@ import (
 	"github.com/google/go-cmp/cmp"
 )
 
+func TestNewDispatcher(t *testing.T) {
+	loader := NewYAMLConfigLoader("./test/dispatch.yaml")
+	config, err := loader.LoadConfig()
+	if err != nil {
+		t.Error(err)
+	}
+
+	services := map[string]*Service{
+		"default": &Service{
+			Name:   "default",
+			Origin: mustParseURL("http://localhost:8081"),
+		},
+		"mobile-frontend": &Service{
+			Name:   "mobile-frontend",
+			Origin: mustParseURL("http://localhost:8082"),
+		},
+	}
+
+	_, err = NewDispatcher(services, config)
+	if err == nil {
+		t.Error("Should be error because static-backend is not defined")
+	}
+}
+
 func TestDispatcher(t *testing.T) {
 	loader := NewYAMLConfigLoader("./test/dispatch.yaml")
 	config, err := loader.LoadConfig()
@@ -29,7 +53,10 @@ func TestDispatcher(t *testing.T) {
 		},
 	}
 
-	dispatcher := NewDispatcher(services, config)
+	dispatcher, err := NewDispatcher(services, config)
+	if err != nil {
+		t.Error(err)
+	}
 
 	cases := []struct {
 		Host, Path string
