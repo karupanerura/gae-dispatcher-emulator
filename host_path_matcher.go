@@ -21,9 +21,12 @@ func (m *genericHostPathMatcher) MatchHostPath(host, path string) bool {
 
 // CompileHostPathMatcher is constructor for HostPathMatcher
 func CompileHostPathMatcher(pattern string) (HostPathMatcher, error) {
-	parts := strings.SplitN(pattern, "/", 2)
-	host, path := parts[0], parts[1]
+	index := strings.Index(pattern, "/")
+	if index == -1 {
+		return nil, fmt.Errorf("Invalid URL pattern: %s (No Path)", pattern)
+	}
 
+	host, path := pattern[:index], pattern[index+1:]
 	hostMatcher, err := compileHostMatcher(host)
 	if err != nil {
 		return nil, fmt.Errorf("Invalid URL pattern: %s (%s)", pattern, err.Error())

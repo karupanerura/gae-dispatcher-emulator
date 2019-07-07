@@ -82,6 +82,7 @@ func TestCompileHostPathMatcher(t *testing.T) {
 
 	t.Run("Invalid", func(t *testing.T) {
 		patterns := []string{
+			"hostnameonly",
 			"/service1/*/foo/*",
 			"*/service1/*/foo/*",
 			"*/service1/*/foo/",
