@@ -15,7 +15,15 @@ type nopErrorReporterType struct{}
 
 var nopErrorReporter = nopErrorReporterType{}
 
-func (r nopErrorReporterType) ReportError(e error) {}
+func (r nopErrorReporterType) ReportError(err error) {}
+
+// ErrorReporterFunc is function interface for ErrorReporter
+type ErrorReporterFunc func(error)
+
+// ReportError calls self as a function
+func (r ErrorReporterFunc) ReportError(err error) {
+	r(err)
+}
 
 // NewProxyHandler creates a new proxy handler
 func NewProxyHandler(dispatcher Dispatcher) http.Handler {
