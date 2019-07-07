@@ -104,7 +104,9 @@ func (h *serviceProxyHandler) createProxyRequest(src *http.Request) (*http.Reque
 	copyHeader(dst.Header, src.Header)
 	dst.Header.Set("X-Forwarded-For", getNewForwardedIPs(src))
 	filterHeaders(dst.Header)
-	dst.ContentLength = src.ContentLength
+	if src.ContentLength != -1 {
+		dst.ContentLength = src.ContentLength
+	}
 
 	return dst, nil
 }
