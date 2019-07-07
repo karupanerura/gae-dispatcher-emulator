@@ -11,6 +11,8 @@ Unofficial Google App Engine Dispatcher Emulator
 `gae-dispatcher-emulator` is an unofficial emulator for `Google App Engine` dispatcher service.
 This works like a local reverse proxy, and it behave by `dispatch.yaml` or `dispatch.xml`.
 
+Example:
+
 ```console
 $ (cd default; dev_appserver.py --port=8081 | tee -a dev.log) &
 $ (cd mobile-backend; dev_appserver.py --port=8082 | tee -a dev.log) &
@@ -24,6 +26,14 @@ I suggest to use it with [foreman](http://ddollar.github.io/foreman/) to launch/
 
 ```bash
 go get -u github.com/karupanerura/gae-dispatcher-emulator/...
+```
+
+or you can install it from [Github Releases](https://github.com/karupanerura/gae-dispatcher-emulator/releases).
+
+Example:
+
+```bash
+curl -sfL -o ~/bin/gae-dispatcher-emulator https://github.com/karupanerura/gae-dispatcher-emulator/releases/download/v0.3.0/gae-dispatcher-emulator_darwin_amd64
 ```
 
 ## Usage
