@@ -29,7 +29,7 @@ print 'Next Version: ';
 chomp(my $version = <STDIN>);
 
 # check version
-{
+my $old_version = do {
     if ($version !~ /^[0-9]+\.[0-9]+\.[0-9]+$/) {
         die "Invalid version format: $version";
     }
@@ -43,13 +43,17 @@ chomp(my $version = <STDIN>);
     if (version->parse($version) <= version->parse($current_version)) {
         die "New version $version is not newer than $current_version";
     }
-}
+
+    $current_version;
+};
 
 # renew version
 {
     open my $fh, '>', 'VERSION' or die $!;
     print $fh $version;
     close $fh or die $!;
+
+    system $^X, '-i', '-pe', "s/v\\Q$old_version/v$version/g", 'README.md';
 }
 
 # edit release note
@@ -75,7 +79,7 @@ while (1) {
 }
 
 # release
-system 'git', 'add', qw/VERSION version_gen.go CHANGELOG.md/;
+system 'git', 'add', qw/VERSION version_gen.go CHANGELOG.md README.md/;
 system 'git', 'commit', '-m', "release $version";
 system 'git', 'tag', "v$version";
 system 'git', 'push';
