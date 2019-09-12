@@ -79,6 +79,9 @@ func createProxyHandler(opts *options) (http.Handler, error) {
 	if err != nil {
 		return nil, fmt.Errorf("Failed to load config: %v", err)
 	}
+	if config.Len() > 20 {
+		log.Printf("[WARN] dispatch rules over than 20 rules (%d rules found)\n", config.Len())
+	}
 
 	services, err := opts.getServicsMap()
 	if err != nil {

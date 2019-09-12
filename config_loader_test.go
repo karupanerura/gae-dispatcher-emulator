@@ -13,6 +13,9 @@ func testConfig(t *testing.T, config *Config) {
 	if len(config.Rules) != 4 {
 		t.Error("config.Rules should have 4 rules")
 	}
+	if config.Len() != len(config.Rules) {
+		t.Error("config.Len() should be 4")
+	}
 
 	if rule := config.Rules[0]; rule.ServiceName != "default" {
 		t.Errorf("config.Rules[0].ServiceName should be `default`, but got: %s", rule.ServiceName)
