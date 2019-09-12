@@ -1,4 +1,8 @@
-## 0.2.0 (2019/07/08)
+## 0.4.0 (2019/09/12)
+
+* Add dispatch rule count warning
+
+## 0.3.0 (2019/07/08)
 
 * Fix backend request's Content-Length
 
