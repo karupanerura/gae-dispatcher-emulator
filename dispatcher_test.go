@@ -7,7 +7,7 @@ import (
 )
 
 func TestNewDispatcher(t *testing.T) {
-	loader := NewYAMLConfigLoader("./test/dispatch.yaml")
+	loader := NewYAMLConfigLoader("./testdata/dispatch.yaml")
 	config, err := loader.LoadConfig()
 	if err != nil {
 		t.Error(err)
@@ -31,7 +31,7 @@ func TestNewDispatcher(t *testing.T) {
 }
 
 func TestDispatcher(t *testing.T) {
-	loader := NewYAMLConfigLoader("./test/dispatch.yaml")
+	loader := NewYAMLConfigLoader("./testdata/dispatch.yaml")
 	config, err := loader.LoadConfig()
 	if err != nil {
 		t.Error(err)

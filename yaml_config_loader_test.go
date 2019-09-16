@@ -3,7 +3,7 @@ package gaedispemu
 import "testing"
 
 func TestYAMLConfigLoader(t *testing.T) {
-	loader := NewYAMLConfigLoader("./test/dispatch.yaml")
+	loader := NewYAMLConfigLoader("./testdata/dispatch.yaml")
 	config, err := loader.LoadConfig()
 	if err != nil {
 		t.Error(err)
@@ -13,17 +13,17 @@ func TestYAMLConfigLoader(t *testing.T) {
 }
 
 func TestYAMLConfigLoaderError(t *testing.T) {
-	_, err := NewYAMLConfigLoader("./test/naiyo-dispatch.yaml").LoadConfig()
+	_, err := NewYAMLConfigLoader("./testdata/naiyo-dispatch.yaml").LoadConfig()
 	if err == nil {
 		t.Error("should be error")
 	}
 
-	_, err = NewYAMLConfigLoader("./test/dispatch.xml").LoadConfig()
+	_, err = NewYAMLConfigLoader("./testdata/dispatch.xml").LoadConfig()
 	if err == nil {
 		t.Error("should be error")
 	}
 
-	_, err = NewYAMLConfigLoader("./test/invalid-dispatch.yaml").LoadConfig()
+	_, err = NewYAMLConfigLoader("./testdata/invalid-dispatch.yaml").LoadConfig()
 	if err == nil {
 		t.Error("should be error")
 	}

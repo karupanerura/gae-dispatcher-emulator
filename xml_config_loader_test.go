@@ -3,7 +3,7 @@ package gaedispemu
 import "testing"
 
 func TestXMLConfigLoader(t *testing.T) {
-	loader := NewXMLConfigLoader("./test/dispatch.xml")
+	loader := NewXMLConfigLoader("./testdata/dispatch.xml")
 	config, err := loader.LoadConfig()
 	if err != nil {
 		t.Error(err)
@@ -13,17 +13,17 @@ func TestXMLConfigLoader(t *testing.T) {
 }
 
 func TestXMLConfigLoaderError(t *testing.T) {
-	_, err := NewXMLConfigLoader("./test/naiyo-dispatch.xml").LoadConfig()
+	_, err := NewXMLConfigLoader("./testdata/naiyo-dispatch.xml").LoadConfig()
 	if err == nil {
 		t.Error("should be error")
 	}
 
-	_, err = NewXMLConfigLoader("./test/dispatch.yaml").LoadConfig()
+	_, err = NewXMLConfigLoader("./testdata/dispatch.yaml").LoadConfig()
 	if err == nil {
 		t.Error("should be error")
 	}
 
-	_, err = NewXMLConfigLoader("./test/invalid-dispatch.xml").LoadConfig()
+	_, err = NewXMLConfigLoader("./testdata/invalid-dispatch.xml").LoadConfig()
 	if err == nil {
 		t.Error("should be error")
 	}
