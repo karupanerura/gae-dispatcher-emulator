@@ -25,7 +25,7 @@ I suggest to use it with [foreman](http://ddollar.github.io/foreman/) to launch/
 ## Installation
 
 ```bash
-go get -u github.com/karupanerura/gae-dispatcher-emulator/...
+go install github.com/karupanerura/gae-dispatcher-emulator/cmd/gae-dispatcher-emulator@latest
 ```
 
 or you can install it from [Github Releases](https://github.com/karupanerura/gae-dispatcher-emulator/releases).
